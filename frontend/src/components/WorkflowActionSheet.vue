@@ -3,14 +3,14 @@
 		v-if="actions.length > 0"
 		:class="[
 			props.view === 'form'
-				? 'px-4 pt-4 pb-4 standalone:pb-safe-bottom sm:w-96 bg-white sticky bottom-0 w-full drop-shadow-xl z-40 border-t rounded-t-lg'
+				? 'px-4 pt-3 pb-4 standalone:pb-safe-bottom bg-page/90 backdrop-blur-md sticky bottom-0 w-full z-40'
 				: 'flex w-full flex-row items-center justify-between gap-3 sticky bottom-0 border-t z-[100] p-4',
 		]"
 	>
 		<Button
 			v-if="props.view === 'form' || actions.length > 2"
 			@click="showTransitions()"
-			class="w-full rounded py-5 text-base disabled:bg-gray-700 disabled:text-white"
+			class="w-full !rounded-full py-6 text-[17px] font-semibold !bg-brand hover:!bg-brand-strong !text-white disabled:opacity-60"
 			variant="solid"
 		>
 			<template #prefix>
@@ -22,7 +22,7 @@
 		<template v-else>
 			<Button
 				v-for="action in actions"
-				class="w-full py-5"
+				class="w-full py-6 !rounded-full text-[15px] font-semibold"
 				:variant="action.variant"
 				:theme="action.theme"
 				@click="applyWorkflow({ workflowAction: action.text })"

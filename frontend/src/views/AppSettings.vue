@@ -1,25 +1,12 @@
 <template>
 	<ion-page>
-		<ion-content class="ion-padding">
-			<div class="flex flex-col h-screen w-screen">
-				<div class="w-full sm:w-96">
-					<header
-						class="flex flex-row bg-white shadow-sm py-4 px-3 items-center justify-between border-b sticky top-0 z-10"
-					>
-						<div class="flex flex-row items-center">
-							<Button
-								variant="ghost"
-								class="!pl-0 hover:bg-white"
-								@click="router.back()"
-							>
-								<FeatherIcon name="chevron-left" class="h-5 w-5" />
-							</Button>
-							<h2 class="text-xl font-semibold text-gray-900">{{ __("Settings") }} </h2>
-						</div>
-					</header>
+		<ion-content class="ion-no-padding">
+			<div class="flex flex-col min-h-full w-full bg-page">
+				<div class="w-full">
+					<PageHeader :title="__('Settings')" />
 
 					<div class="flex flex-col gap-5 my-4 w-full p-4">
-						<div class="flex flex-col bg-white rounded">
+						<div class="flex flex-col bg-white rounded-card overflow-hidden">
 							<div
 								class="flex flex-row cursor-pointer flex-start p-4 items-center justify-between border-b"
 							>
@@ -32,7 +19,7 @@
 											name="lock"
 											class="h-5 w-5 text-gray-500"
 										/>
-										<div class="text-base font-normal text-gray-800">
+										<div class="text-[17px] text-ink">
 											{{ __("Change Password") }}
 										</div>
 									</div>
@@ -44,7 +31,7 @@
 							</div>
 						</div>
 
-						<div class="flex flex-col bg-white rounded">
+						<div class="flex flex-col bg-white rounded-card overflow-hidden">
 							<Switch
 								size="md"
 								:label="__('Enable Push Notifications')"
@@ -73,6 +60,7 @@
 </template>
 
 <script setup>
+import PageHeader from "@/components/PageHeader.vue"
 import { IonPage, IonContent } from "@ionic/vue"
 import { useRouter } from "vue-router"
 import { FeatherIcon, Switch, toast, LoadingIndicator, Button } from "frappe-ui"

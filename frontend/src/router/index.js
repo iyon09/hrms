@@ -6,6 +6,7 @@ import leaveRoutes from "./leaves"
 import claimRoutes from "./claims"
 import employeeAdvanceRoutes from "./advances"
 import salarySlipRoutes from "./salary_slips"
+import overtimeSlipRoutes from "./overtime_slips"
 
 const routes = [
 	{
@@ -68,6 +69,11 @@ const routes = [
 		component: () => import("@/views/Notifications.vue"),
 	},
 	{
+		path: "/approvals",
+		name: "Approvals",
+		component: () => import("@/views/Approvals.vue"),
+	},
+	{
 		path: "/settings",
 		name: "Settings",
 		component: () => import("@/views/AppSettings.vue"),
@@ -87,6 +93,7 @@ const routes = [
 	...claimRoutes,
 	...employeeAdvanceRoutes,
 	...salarySlipRoutes,
+	...overtimeSlipRoutes,
 ]
 
 const router = createRouter({

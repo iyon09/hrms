@@ -5,12 +5,12 @@
 		:employeeName="props.doc.employee_name"
 	>
 		<template #left>
-			<ExpenseIcon class="h-5 w-5 text-gray-500" />
+			<ExpenseIcon class="h-[30px] w-[30px] p-[6px] shrink-0 rounded-lg text-white bg-[#F08A24]" />
 			<div class="flex flex-col items-start gap-1.5">
-				<div class="text-base font-normal text-gray-800">
+				<div class="text-[17px] text-ink">
 					{{ claimTitle }}
 				</div>
-				<div class="text-xs font-normal text-gray-500">
+				<div class="text-[13px] text-ink-subtle">
 					<span>{{ claimDates }}</span>
 					<span class="whitespace-pre"> &middot; </span>
 					<span class="whitespace-nowrap">
@@ -21,7 +21,7 @@
 		</template>
 		<template #right>
 			<Badge variant="outline" :theme="statusMap[status]" :label="__(status, null, 'Expense Claim')" size="md" />
-			<FeatherIcon name="chevron-right" class="h-5 w-5 text-gray-500" />
+			<FeatherIcon name="chevron-right" class="h-[17px] w-[17px] text-ink-faint" />
 		</template>
 	</ListItem>
 </template>

@@ -1,47 +1,46 @@
 <template>
 	<ion-page>
 		<ion-header class="ion-no-border">
-			<div class="w-full sm:w-96">
-				<div class="flex flex-col bg-white shadow-sm p-4">
-					<div class="flex flex-row justify-between items-center">
-						<div class="flex flex-row items-center gap-2">
-							<h2 class="text-xl font-bold text-gray-900">
-								{{ props.pageTitle || __("Frappe HR") }}
-							</h2>
-						</div>
-						<div class="flex flex-row items-center gap-3 ml-auto">
-							<router-link
-								:to="{ name: 'Notifications' }"
-								v-slot="{ navigate }"
-								class="flex flex-col items-center"
+			<div class="w-full bg-page/90 backdrop-blur-md px-5 pt-4 pb-3 standalone:pt-safe-top">
+				<div class="flex flex-row items-center justify-end gap-2.5 min-h-[36px]">
+					<router-link
+						:to="{ name: 'Notifications' }"
+						v-slot="{ navigate }"
+						class="flex flex-col items-center"
+					>
+						<button
+							class="relative flex items-center justify-center h-9 w-9 rounded-full bg-white text-brand"
+							:aria-label="__('Notifications')"
+							@click="navigate"
+						>
+							<FeatherIcon name="bell" class="h-[18px] w-[18px]" />
+							<span
+								v-if="unreadNotificationsCount.data"
+								class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-semibold text-white bg-red-500 rounded-full border-2 border-page"
 							>
-								<span class="relative inline-block" @click="navigate">
-									<FeatherIcon name="bell" class="h-6 w-6" />
-									<span
-										v-if="unreadNotificationsCount.data"
-										class="absolute top-0 right-0.5 inline-block w-2 h-2 bg-red-600 rounded-full border border-white"
-									>
-									</span>
-								</span>
-							</router-link>
-							<router-link
-								:to="{ name: 'Profile' }"
-								class="flex flex-col items-center"
-							>
-								<Avatar
-									:image="user.data.user_image"
-									:label="user.data.first_name"
-									size="xl"
-								/>
-							</router-link>
-						</div>
-					</div>
+								{{ unreadNotificationsCount.data > 9 ? "9+" : unreadNotificationsCount.data }}
+							</span>
+						</button>
+					</router-link>
+					<router-link :to="{ name: 'Profile' }" class="flex flex-col items-center">
+						<Avatar
+							:image="user.data.user_image"
+							:label="user.data.first_name"
+							size="xl"
+						/>
+					</router-link>
 				</div>
+				<h1 class="font-heading text-[30px] leading-tight font-bold text-ink tracking-tight mt-1">
+					{{ props.pageTitle || __("Frappe HR") }}
+				</h1>
+				<p v-if="props.subtitle" class="text-[15px] text-ink-subtle truncate mt-0.5">
+					{{ props.subtitle }}
+				</p>
 			</div>
 		</ion-header>
 
 		<ion-content class="ion-no-padding">
-			<div class="flex flex-col h-screen w-screen sm:w-96">
+			<div class="flex flex-col w-full">
 				<slot name="body"></slot>
 			</div>
 		</ion-content>
@@ -57,9 +56,15 @@ import { unreadNotificationsCount } from "@/data/notifications"
 import { inject } from "vue"
 
 const user = inject("$user")
+const __ = inject("$translate")
 
 const props = defineProps({
 	pageTitle: {
+		type: String,
+		required: false,
+		default: "",
+	},
+	subtitle: {
 		type: String,
 		required: false,
 		default: "",

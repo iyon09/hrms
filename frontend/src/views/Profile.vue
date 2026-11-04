@@ -1,140 +1,81 @@
 <template>
 	<ion-page>
-		<ion-content class="ion-padding">
-			<div class="flex flex-col h-screen w-screen">
-				<div class="w-full sm:w-96">
-					<header
-						class="flex flex-row bg-white shadow-sm py-4 px-3 items-center justify-between border-b sticky top-0 z-10"
-					>
-						<div class="flex flex-row items-center">
-							<Button
-								variant="ghost"
-								class="!pl-0 hover:bg-white"
-								@click="router.back()"
-							>
-								<FeatherIcon name="chevron-left" class="h-5 w-5" />
-							</Button>
-							<h2 class="text-xl font-semibold text-gray-900">{{ __("Profile") }}</h2>
-						</div>
-					</header>
+		<ion-content class="ion-no-padding">
+			<div class="flex flex-col min-h-full w-full bg-page">
+				<PageHeader :title="__('My Profile')">
+					<template #actions>
+						<router-link
+							:to="{ name: 'Settings' }"
+							class="flex items-center justify-center h-9 w-9 rounded-full bg-white text-ink"
+							:aria-label="__('Settings')"
+						>
+							<FeatherIcon name="settings" class="h-[18px] w-[18px]" />
+						</router-link>
+					</template>
+				</PageHeader>
 
-					<div class="flex flex-col items-center mt-5 p-4">
-						<!-- Profile Image -->
+				<div class="flex flex-col px-4 pb-10">
+					<!-- Profile header -->
+					<div class="flex flex-col items-center pt-4">
 						<img
 							v-if="user.data.user_image"
-							class="h-24 w-24 rounded-full object-cover"
+							class="h-24 w-24 rounded-full object-cover shadow-md"
 							:src="user.data.user_image"
 							:alt="user.data.first_name"
 						/>
 						<div
 							v-else
-							class="flex items-center justify-center bg-gray-200 uppercase text-gray-600 h-24 w-24 rounded-full object-cover"
+							class="flex items-center justify-center h-24 w-24 rounded-full text-[34px] font-semibold uppercase text-white shadow-md bg-gradient-to-br from-[#11855F] to-brand"
 						>
-							{{ user.data.first_name[0] }}
+							{{ initials }}
 						</div>
-
-						<div class="flex flex-col gap-1.5 items-center mt-2 mb-5">
-							<span v-if="employee" class="text-lg font-bold text-gray-900">{{
-								employee?.data?.employee_name
-							}}</span>
-							<span v-if="employee" class="font-normal text-sm text-gray-500">{{
-								employee?.data?.designation
-							}}</span>
+						<div class="mt-3 font-heading text-[22px] font-bold text-ink text-center tracking-tight">
+							{{ employee?.data?.employee_name }}
 						</div>
+						<div v-if="employee?.data?.designation" class="text-[15px] text-ink-subtle text-center">
+							{{ employee.data.designation }}
+						</div>
+					</div>
 
-						<!-- Profile Links -->
-						<div class="flex flex-col gap-5 my-4 w-full">
-							<div class="flex flex-col bg-white rounded">
-								<div
-									class="flex flex-row cursor-pointer flex-start p-4 items-center justify-between border-b"
-									v-for="link in profileLinks"
-									:key="link.title"
-									@click="openInfoModal(link)"
-								>
-									<div class="flex flex-row items-center gap-3 grow">
-										<FeatherIcon
-											:name="link.icon"
-											class="h-5 w-5 text-gray-500"
-										/>
-										<div class="text-base font-normal text-gray-800">
-											{{ link.title }}
-										</div>
-									</div>
-									<FeatherIcon
-										name="chevron-right"
-										class="h-5 w-5 text-gray-500"
+					<!-- Detail groups shown inline, label above value -->
+					<template v-for="section in profileLinks" :key="section.title">
+						<SectionHeader :title="section.title" />
+						<div class="bg-white rounded-card overflow-hidden">
+							<div
+								v-if="!employeeDoc.doc || !employeeDocType.data"
+								class="flex flex-col gap-2 px-4 py-3"
+							>
+								<div class="h-3 w-24 rounded bg-gray-100 animate-pulse"></div>
+								<div class="h-4 w-40 rounded bg-gray-100 animate-pulse"></div>
+							</div>
+							<template v-else v-for="(field, index) in section.fields" :key="field">
+								<div class="flex flex-col gap-0.5 px-4 py-2.5">
+									<span class="text-[13px] text-ink-subtle">{{ getFieldInfo(field)[0] }}</span>
+									<FormattedField
+										:value="getFieldValue(field)"
+										:fieldtype="getFieldInfo(field)[1]"
+										:fieldname="field"
 									/>
 								</div>
-							</div>
-						</div>
-
-						<!-- Settings -->
-						<div
-							class="flex flex-col gap-5 my-4 w-full"
-						>
-							<div class="flex flex-col bg-white rounded">
-								<router-link
-									:to="{ name: 'Settings' }"
-									class="flex flex-row cursor-pointer flex-start p-4 items-center justify-between border-b"
-								>
-									<div class="flex flex-row items-center gap-3 grow">
-										<FeatherIcon
-											name="settings"
-											class="h-5 w-5 text-gray-500"
-										/>
-										<div class="text-base font-normal text-gray-800">
-											{{ __("Settings") }}
-										</div>
-									</div>
-									<FeatherIcon
-										name="chevron-right"
-										class="h-5 w-5 text-gray-500"
-									/>
-								</router-link>
-							</div>
-						</div>
-
-						<Button
-							@click="logout"
-							variant="outline"
-							theme="red"
-							class="w-full shadow py-4 mt-5"
-						>
-							<template #prefix>
-								<FeatherIcon name="log-out" class="w-4" />
+								<div v-if="index < section.fields.length - 1" class="ml-4 h-px bg-gray-200/60"></div>
 							</template>
-							{{ __("Log Out") }}
-						</Button>
-					</div>
+						</div>
+					</template>
+					<p class="px-4 pt-2 text-[13px] text-ink-subtle">
+						{{ __("Employment details are managed by HR.") }}
+					</p>
+
+					<button
+						class="flex flex-row items-center justify-center gap-2 w-full mt-8 py-3.5 rounded-full bg-red-50 text-red-700 text-[17px] font-semibold active:scale-[0.97] transition-transform"
+						@click="logout"
+					>
+						<FeatherIcon name="log-out" class="h-[18px] w-[18px]" />
+						{{ __("Log Out") }}
+					</button>
 				</div>
 			</div>
-
-			<ion-modal
-				ref="modal"
-				:is-open="isInfoModalOpen"
-				@didDismiss="closeInfoModal"
-				:initial-breakpoint="1"
-				:breakpoints="[0, 1]"
-			>
-				<ProfileInfoModal
-					v-if="selectedItem"
-					:title="selectedItem.title"
-					:data="
-						selectedItem.fields.map((field) => {
-							const [label, fieldtype] = getFieldInfo(field)
-							return {
-								fieldname: field,
-								value: getFieldValue(field),
-								label: label,
-								fieldtype: fieldtype,
-							}
-						})
-					"
-				/>
-			</ion-modal>
-
-	</ion-content>
-</ion-page>
+		</ion-content>
+	</ion-page>
 </template>
 
 <script setup>
@@ -146,7 +87,9 @@ import { FeatherIcon, createDocumentResource, createResource, toast } from "frap
 import { showErrorAlert } from "@/utils/dialogs"
 import { formatCurrency } from "@/utils/formatters"
 
-import ProfileInfoModal from "@/components/ProfileInfoModal.vue"
+import PageHeader from "@/components/PageHeader.vue"
+import SectionHeader from "@/components/SectionHeader.vue"
+import FormattedField from "@/components/FormattedField.vue"
 
 import { arePushNotificationsEnabled } from "@/data/notifications"
 
@@ -214,8 +157,14 @@ const profileLinks = [
 	},
 ]
 
-const isInfoModalOpen = ref(false)
-const selectedItem = ref(null)
+const initials = computed(() =>
+	(employee?.data?.employee_name || user.data.first_name || "")
+		.split(" ")
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((word) => word[0])
+		.join("")
+)
 
 const allowPushNotifications = computed(
 	() =>
@@ -223,15 +172,6 @@ const allowPushNotifications = computed(
 		arePushNotificationsEnabled.data
 )
 
-const openInfoModal = async (request) => {
-	selectedItem.value = request
-	isInfoModalOpen.value = true
-}
-
-const closeInfoModal = async (_request) => {
-	isInfoModalOpen.value = false
-	selectedItem.value = null
-}
 
 const employeeDoc = createDocumentResource({
 	doctype: DOCTYPE,

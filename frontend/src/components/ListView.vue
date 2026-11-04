@@ -1,42 +1,25 @@
 <template>
 	<ion-header class="ion-no-border">
-		<div class="w-full sm:w-96">
-			<div
-				class="flex flex-row bg-white shadow-sm py-4 px-3 items-center justify-between border-b"
-			>
-				<div class="flex flex-row items-center">
-					<Button variant="ghost" class="!px-1 mr-1 hover:bg-white" @click="router.back()">
-						<FeatherIcon name="chevron-left" class="h-5 w-5" />
-					</Button>
-					<h2 class="text-xl font-semibold text-gray-900">{{ pageTitle }}</h2>
-				</div>
-
-				<div class="flex flex-row gap-2">
-					<Button
-						id="show-filter-modal"
-						icon="filter"
-						variant="subtle"
-						:class="[
-							areFiltersApplied
-								? '!border !border-gray-800 !bg-white !text-gray-900 !font-semibold'
-								: '',
-						]"
-					/>
-					<router-link
-						v-if="createPermission?.data?.has_permission && props.doctype != 'Employee Checkin'"
-						:to="{ name: formViewRoute }"
-						v-slot="{ navigate }"
-					>
-						<Button variant="solid" class="mr-2" @click="navigate">
-							<template #prefix>
-								<FeatherIcon name="plus" class="w-4" />
-							</template>
-							{{ __("New", null, props.doctype) }}
-						</Button>
-					</router-link>
-				</div>
-			</div>
-		</div>
+		<PageHeader :title="pageTitle">
+			<template #actions>
+				<button
+					id="show-filter-modal"
+					class="flex items-center justify-center h-9 w-9 rounded-full transition-colors"
+					:class="areFiltersApplied ? 'bg-brand text-white' : 'bg-white text-ink'"
+					:aria-label="__('Filter')"
+				>
+					<FeatherIcon name="filter" class="h-[18px] w-[18px]" />
+				</button>
+				<router-link
+					v-if="createPermission?.data?.has_permission && props.doctype != 'Employee Checkin'"
+					:to="{ name: formViewRoute }"
+					class="flex flex-row items-center gap-1 h-9 pl-3 pr-3.5 rounded-full bg-brand text-white text-[15px] font-semibold active:scale-95 transition-transform"
+				>
+					<FeatherIcon name="plus" class="h-4 w-4" />
+					{{ __("New", null, props.doctype) }}
+				</router-link>
+			</template>
+		</PageHeader>
 	</ion-header>
 
 	<ion-content>
@@ -45,24 +28,24 @@
 		</ion-refresher>
 
 		<div
-			class="flex flex-col items-center mb-7 p-4 h-full w-full sm:w-96 overflow-y-auto"
+			class="flex flex-col items-center pb-7 px-4 pt-1 h-full w-full overflow-y-auto bg-page"
 			ref="scrollContainer"
 			@scroll="() => handleScroll()"
 		>
 			<div class="w-full">
 				<TabButtons
 					v-if="props.tabButtons"
-					class="mt-5"
+					class="mt-2"
 					:buttons="props.tabButtons"
 					v-model="activeTab"
 				/>
 
 				<div
-					class="flex flex-col bg-white rounded mt-5"
+					class="flex flex-col bg-white rounded-card overflow-hidden mt-4"
 					v-if="!documents.loading && documents.data?.length"
 				>
 					<div
-						class="p-3.5 items-center justify-between border-b cursor-pointer"
+						class="px-4 py-3.5 items-center justify-between border-b border-gray-200/60 last:border-b-0 cursor-pointer active:bg-gray-100 transition-colors"
 						v-for="link in documents.data"
 						:key="link.name"
 					>
@@ -96,7 +79,7 @@
 
 				<!-- Loading Indicator -->
 				<div v-if="documents.loading" class="flex mt-2 items-center justify-center">
-					<LoadingIndicator class="w-8 h-8 text-gray-800" />
+					<LoadingIndicator class="w-8 h-8 text-brand" />
 				</div>
 			</div>
 		</div>
@@ -130,6 +113,7 @@
 </template>
 
 <script setup>
+import PageHeader from "@/components/PageHeader.vue"
 import { useRouter } from "vue-router"
 import { inject, ref, markRaw, watch, computed, reactive, onMounted } from "vue"
 import {

@@ -5,7 +5,7 @@
 		:employeeName="props.doc.employee_name"
 	>
 		<template #left>
-			<EmployeeAdvanceIcon class="h-5 w-5 mt-[3px] text-gray-500" />
+			<EmployeeAdvanceIcon class="h-[30px] w-[30px] p-[6px] shrink-0 rounded-lg text-white bg-[#F08A24]" />
 			<div class="flex flex-col items-start gap-1">
 				<div v-if="props.doc.balance_amount" class="text-lg font-bold text-gray-800 leading-6">
 					{{ formatCurrency(props.doc.balance_amount, props.doc.currency) }}
@@ -17,7 +17,7 @@
 				<div v-else class="text-lg font-bold text-gray-800 leading-6">
 					{{ formatCurrency(props.doc.advance_amount, props.doc.currency) }}
 				</div>
-				<div class="text-xs font-normal text-gray-500">
+				<div class="text-[13px] text-ink-subtle">
 					<span>
 						{{ __(props.doc.purpose) }}
 					</span>
@@ -30,7 +30,7 @@
 		</template>
 		<template #right>
 			<Badge variant="outline" :theme="colorMap[status]" :label="__(status, null, 'Employee Advance')" size="md" />
-			<FeatherIcon name="chevron-right" class="h-5 w-5 text-gray-500" />
+			<FeatherIcon name="chevron-right" class="h-[17px] w-[17px] text-ink-faint" />
 		</template>
 	</ListItem>
 </template>

@@ -2,6 +2,9 @@
 
 ion-modal {
 	--height: auto;
+	/* Ionic widens sheets to 600px on tablets/desktops; stay inside the 480px app column */
+	--width: 100%;
+	--max-width: 480px;
 }
 
 input:disabled {
@@ -19,6 +22,51 @@ body {
 	-webkit-tap-highlight-color: transparent;
 }
 
+/* frappe-ui forces Inter on html; use the app font everywhere */
+html,
+body {
+	font-family: var(--ion-font-family);
+	background-color: #d5dbe3;
+}
+
+/* Keep the app a phone-width column, centred on tablets and desktops */
+ion-app {
+	max-width: 480px;
+	margin: 0 auto;
+	box-shadow: 0 0 40px rgba(15, 23, 42, 0.08);
+}
+
+/* Floating pill tab bar (MainShell's _GlassBottomNav) */
+ion-tab-bar.app-tab-bar {
+	--background: rgba(255, 255, 255, 0.8);
+	--border: 0.5px solid rgba(255, 255, 255, 0.7);
+	height: 62px;
+	margin: 0 88px 12px 16px;
+	padding: 4px;
+	border-radius: 999px;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+	backdrop-filter: blur(24px);
+	-webkit-backdrop-filter: blur(24px);
+	contain: none;
+}
+
+@media (display-mode: standalone) {
+	ion-tab-bar.app-tab-bar {
+		margin-bottom: max(12px, calc(env(safe-area-inset-bottom) - 4px));
+	}
+}
+
+ion-tab-bar.app-tab-bar ion-tab-button {
+	--background: transparent;
+	--ripple-color: transparent;
+	border-radius: 999px;
+	transition: background-color 0.3s ease;
+}
+
+ion-tab-bar.app-tab-bar ion-tab-button.tab-selected {
+	background-color: rgba(15, 23, 42, 0.07);
+}
+
 .hide-scrollbar::-webkit-scrollbar {
 	display: none;
 }
@@ -27,4 +75,60 @@ body {
 .hide-scrollbar {
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
+}
+
+/* Form fields: filled iOS-style inputs (Flutter form_fields.dart) */
+.app-field .form-input,
+.app-field .form-textarea,
+.app-field .form-select,
+.app-field button.h-7 {
+	min-height: 48px;
+	padding: 12px 16px;
+	border: 1.5px solid transparent;
+	border-radius: 12px;
+	background-color: #f1f3f6;
+	color: #0f172a;
+	font-size: 16px; /* 16px stops iOS from zooming in on focus */
+	line-height: 1.4;
+	box-shadow: none;
+}
+
+.app-field .form-textarea {
+	min-height: 96px;
+}
+
+.app-field .form-input:focus,
+.app-field .form-textarea:focus,
+.app-field .form-select:focus,
+.app-field button.h-7:focus {
+	border-color: #0e7c5a;
+	background-color: #fff;
+	box-shadow: none;
+	--tw-ring-shadow: 0 0 #0000;
+}
+
+.app-field .form-input:disabled,
+.app-field .form-textarea:disabled,
+.app-field .form-select:disabled {
+	background-color: #f8fafc;
+	color: #475569;
+}
+
+.app-field button.h-7 span {
+	font-size: 16px;
+}
+
+.app-field input[type="checkbox"] {
+	height: 20px;
+	width: 20px;
+	border-radius: 6px;
+	color: #0e7c5a;
+}
+
+/* horizontally scrolling chip rows */
+.no-scrollbar {
+	scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }

@@ -10,7 +10,26 @@
 				:id="props.id"
 				:showAttachmentView="true"
 				@validateForm="validateForm"
-			/>
+			>
+				<template #before-from_date="{ isFormReadOnly }">
+					<div v-if="!props.id && !isFormReadOnly" class="flex flex-row flex-wrap gap-2">
+						<button
+							v-for="chip in quickDates"
+							:key="chip.label"
+							class="px-3.5 py-1.5 rounded-full text-[15px] transition-colors"
+							:class="
+								leaveApplication.from_date === chip.date &&
+								leaveApplication.to_date === chip.date
+									? 'bg-brand text-white font-semibold'
+									: 'bg-[#F1F3F6] text-ink font-medium'
+							"
+							@click="setLeaveDate(chip.date)"
+						>
+							{{ chip.label }}
+						</button>
+					</div>
+				</template>
+			</FormView>
 		</ion-content>
 	</ion-page>
 </template>
@@ -38,6 +57,19 @@ const currEmployee = ref(sessionEmployee.data.name)
 
 // reactive object to store form data
 const leaveApplication = ref({})
+
+// one-tap start dates for the most common near-term picks
+const nextMonday = dayjs().add(((8 - dayjs().day()) % 7) || 7, "day")
+const quickDates = [
+	{ label: __("Today"), date: today },
+	{ label: __("Tomorrow"), date: dayjs().add(1, "day").format("YYYY-MM-DD") },
+	{ label: __("Next Monday"), date: nextMonday.format("YYYY-MM-DD") },
+]
+
+function setLeaveDate(date) {
+	leaveApplication.value.from_date = date
+	leaveApplication.value.to_date = date
+}
 
 // For existing docs, watchers fire during initial data population from the DB.
 // This flag prevents setLeaveBalance() from overwriting the stored

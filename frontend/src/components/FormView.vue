@@ -1,35 +1,35 @@
 <template>
 	<div class="flex flex-col h-full w-full" v-if="isFormReady">
-		<div class="w-full h-full bg-white sm:w-96 flex flex-col">
+		<div class="app-form w-full h-full bg-page flex flex-col">
 			<header
-				class="flex flex-row bg-white shadow-sm py-4 px-3 items-center sticky top-0 z-[1000]"
+				class="flex flex-row bg-page/90 backdrop-blur-md py-3 px-3 gap-1 items-center sticky top-0 z-[1000] standalone:pt-safe-top"
 			>
-				<Button
-					variant="ghost"
-					class="!pl-0 hover:bg-white"
+				<button
+					class="flex items-center justify-center h-9 w-9 shrink-0 rounded-full text-brand active:bg-gray-900/[0.06]"
+					:aria-label="__('Back')"
 					@click="router.back()"
 				>
-					<FeatherIcon name="chevron-left" class="h-5 w-5" />
-				</Button>
+					<FeatherIcon name="chevron-left" class="h-6 w-6" />
+				</button>
 				<div
 					v-if="id"
 					class="flex flex-row items-center gap-2 overflow-hidden grow"
 				>
 					<h2
-						class="text-xl font-semibold text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis"
+						class="text-[17px] font-semibold text-ink whitespace-nowrap overflow-hidden text-ellipsis"
 					>
 						{{ __(props.doctype) }}
 					</h2>
 					<Badge
 						:label="id"
-						class="whitespace-nowrap text-[8px]"
+						class="whitespace-nowrap"
 						variant="outline"
 					/>
 					<Badge
 						v-if="status"
 						:label="__(status, null, doctype)"
 						:theme="statusColor"
-						class="whitespace-nowrap text-[8px]"
+						class="whitespace-nowrap"
 					/>
 
 					<Dropdown
@@ -54,27 +54,25 @@
 						}"
 					/>
 				</div>
-				<h2 v-else class="text-2xl font-semibold text-gray-900">
+				<h2 v-else class="font-heading text-[22px] font-bold text-ink tracking-tight">
 					{{ __('New {0}', [__(doctype)], props.doctype) }}
 				</h2>
 			</header>
 
 			<!-- Form -->
-			<div class="bg-white grow overflow-y-auto">
+			<div class="bg-page grow overflow-y-auto">
 				<!-- Tabs -->
 				<template v-if="tabbedView">
-					<div
-						class="px-4 sticky top-0 z-[100] bg-white text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700"
-					>
-						<ul class="flex -mb-px overflow-auto hide-scrollbar">
-							<li class="mr-2 whitespace-nowrap" v-for="tab in tabs">
+					<div class="px-4 pt-1 pb-1 sticky top-0 z-[100] bg-page/90 backdrop-blur-md">
+						<ul class="flex gap-1 overflow-auto hide-scrollbar">
+							<li class="whitespace-nowrap" v-for="tab in tabs">
 								<button
 									@click="activeTab = tab.name"
-									class="inline-block py-4 px-2 border-b-2 border-transparent rounded-t-lg"
+									class="inline-block px-3.5 py-2 rounded-full text-[15px] transition-colors"
 									:class="[
 										activeTab === tab.name
-											? '!text-gray-800 !border-gray-800'
-											: 'hover:text-gray-600 hover:border-gray-300',
+											? 'bg-brand-tint text-brand font-semibold'
+											: 'text-ink-subtle font-medium',
 									]"
 								>
 									{{ __(tab.name, null, props.doctype) }}
@@ -86,7 +84,7 @@
 					<template v-for="(fieldList, tabName, index) in tabFields">
 						<div
 							v-show="tabName === activeTab"
-							class="flex flex-col space-y-4 p-4"
+							class="flex flex-col space-y-4 m-4 p-4 bg-white rounded-card"
 						>
 							<template v-for="field in fieldList" :key="field.fieldname">
 								<slot
@@ -134,25 +132,30 @@
 					</template>
 				</template>
 
-				<div class="flex flex-col space-y-4 p-4" v-else>
-					<FormField
-						v-for="field in props.fields"
-						:key="field.name"
-						:fieldtype="field.fieldtype"
-						:fieldname="field.fieldname"
-						v-model="formModel[field.fieldname]"
-						:default="field.default"
-						:label="__(field.label, null, props.doctype)"
-						:options="field.options"
-						:linkFilters="field.linkFilters"
-						:documentList="field.documentList"
-						:readOnly="isFieldReadOnly(field)"
-						:reqd="Boolean(field.reqd)"
-						:hidden="Boolean(field.hidden)"
-						:errorMessage="field.error_message"
-						:minDate="field.minDate"
-						:maxDate="field.maxDate"
-					/>
+				<div class="flex flex-col space-y-4 m-4 p-4 bg-white rounded-card" v-else>
+					<template v-for="field in props.fields" :key="field.name">
+						<!-- lets a form add helpers above a field, e.g. quick date chips -->
+						<slot
+							:name="`before-${field.fieldname}`"
+							:isFormReadOnly="isFormReadOnly"
+						></slot>
+						<FormField
+							:fieldtype="field.fieldtype"
+							:fieldname="field.fieldname"
+							v-model="formModel[field.fieldname]"
+							:default="field.default"
+							:label="__(field.label, null, props.doctype)"
+							:options="field.options"
+							:linkFilters="field.linkFilters"
+							:documentList="field.documentList"
+							:readOnly="isFieldReadOnly(field)"
+							:reqd="Boolean(field.reqd)"
+							:hidden="Boolean(field.hidden)"
+							:errorMessage="field.error_message"
+							:minDate="field.minDate"
+							:maxDate="field.maxDate"
+						/>
+					</template>
 
 					<!-- Attachment upload -->
 					<div
@@ -176,7 +179,7 @@
 			<!-- custom form button eg: Download button in salary slips -->
 			<div
 				v-if="!showFormButton"
-				class="px-4 pt-4 pb-4 standalone:pb-safe-bottom sm:w-96 bg-white sticky bottom-0 w-full drop-shadow-xl z-40 border-t rounded-t-lg"
+				class="px-4 pt-3 pb-4 standalone:pb-safe-bottom bg-page/90 backdrop-blur-md sticky bottom-0 w-full z-40"
 			>
 				<slot name="formButton"></slot>
 			</div>
@@ -192,7 +195,7 @@
 			<!-- save/submit/cancel -->
 			<div
 				v-else-if="isFormDirty || (!workflow?.hasWorkflow && formButton)"
-				class="px-4 pt-4 pb-4 standalone:pb-safe-bottom sm:w-96 bg-white sticky bottom-0 w-full drop-shadow-xl z-40 border-t rounded-t-lg"
+				class="px-4 pt-3 pb-4 standalone:pb-safe-bottom bg-page/90 backdrop-blur-md sticky bottom-0 w-full z-40"
 			>
 				<ErrorMessage
 					class="mb-2"
@@ -204,8 +207,12 @@
 				/>
 
 				<Button
-					class="w-full rounded py-5 text-base disabled:bg-gray-700 disabled:text-white"
-					:class="formButton === 'Cancel' ? 'shadow' : ''"
+					class="w-full !rounded-full py-6 text-[17px] font-semibold disabled:opacity-60"
+					:class="
+						formButton === 'Cancel'
+							? '!bg-red-50 !text-red-700'
+							: '!bg-brand hover:!bg-brand-strong !text-white'
+					"
 					@click="formButton === 'Save' ? saveForm() : submitOrCancelForm()"
 					:variant="formButton === 'Cancel' ? 'subtle' : 'solid'"
 					:loading="

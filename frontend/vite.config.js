@@ -8,7 +8,8 @@ import fs from "fs"
 
 export default defineConfig({
 	server: {
-		port: 8080,
+		host: "0.0.0.0",
+		port: 8081,
 		proxy: getProxyOptions(),
 		allowedHosts: true,
 	},
@@ -90,20 +91,11 @@ export default defineConfig({
 })
 
 function getProxyOptions() {
-	const config = getCommonSiteConfig()
-	const webserver_port = config ? config.webserver_port : 8000
-	if (!config) {
-		console.log("No common_site_config.json found, using default port 8000")
-	}
 	return {
-		"^/(app|login|api|assets|files|private)": {
-			target: `http://127.0.0.1:${webserver_port}`,
+		"^/(app|login|api|assets|files|private|method|socket.io)": {
+			target: "http://127.0.0.1:8080",
+			changeOrigin: true,
 			ws: true,
-			router: function (req) {
-				const site_name = req.headers.host.split(":")[0]
-				console.log(`Proxying ${req.url} to ${site_name}:${webserver_port}`)
-				return `http://${site_name}:${webserver_port}`
-			},
 		},
 	}
 }

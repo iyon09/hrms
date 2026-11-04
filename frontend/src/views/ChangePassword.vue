@@ -2,22 +2,11 @@
 	<ion-page>
 		<ion-content :fullscreen="true">
 			<div class="flex flex-col h-full w-full">
-				<div class="w-full h-full bg-white sm:w-96 flex flex-col">
-					<header
-						class="flex flex-row bg-white shadow-sm py-4 px-3 items-center sticky top-0 z-[1000]"
-					>
-						<Button
-							variant="ghost"
-							class="!pl-0 hover:bg-white"
-							@click="router.back()"
-						>
-							<FeatherIcon name="chevron-left" class="h-5 w-5" />
-						</Button>
-						<h2 class="text-xl font-semibold text-gray-900">{{ __("Change Password") }}</h2>
-					</header>
+				<div class="app-form w-full h-full bg-page flex flex-col">
+					<PageHeader :title="__('Change Password')" />
 
-					<div class="bg-white grow overflow-y-auto">
-						<form class="flex flex-col space-y-4 p-4" @submit.prevent="submitPasswordChange">
+					<div class="bg-page grow overflow-y-auto">
+						<form class="app-field flex flex-col space-y-4 m-4 p-4 bg-white rounded-card" @submit.prevent="submitPasswordChange">
 							<Input
 								:label="__('Current Password') + ' *'"
 								type="password"
@@ -43,11 +32,11 @@
 					</div>
 
 					<div
-						class="px-4 pt-4 pb-4 standalone:pb-safe-bottom sm:w-96 bg-white sticky bottom-0 w-full drop-shadow-xl z-40 border-t rounded-t-lg"
+						class="px-4 pt-3 pb-4 standalone:pb-safe-bottom bg-page/90 backdrop-blur-md sticky bottom-0 w-full z-40"
 					>
 						<ErrorMessage class="mb-2" :message="changePasswordError" />
 						<Button
-							class="w-full rounded py-5 text-base disabled:bg-gray-700 disabled:text-white"
+							class="w-full !rounded-full py-6 text-[17px] font-semibold !bg-brand hover:!bg-brand-strong !text-white disabled:opacity-60"
 							:loading="updatePasswordResource.loading"
 							variant="solid"
 							@click="submitPasswordChange"
@@ -62,6 +51,7 @@
 </template>
 
 <script setup>
+import PageHeader from "@/components/PageHeader.vue"
 import { IonPage, IonContent } from "@ionic/vue"
 import { useRouter } from "vue-router"
 import { FeatherIcon, toast, createResource, Input, ErrorMessage, Button } from "frappe-ui"

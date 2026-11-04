@@ -3,7 +3,7 @@
 		<ion-content class="ion-padding">
 			<div
 				v-if="resetPassword.showDialog"
-				class="flex h-screen w-screen flex-col bg-white"
+				class="flex h-screen w-full flex-col bg-white"
 			>
 				<header class="flex items-center justify-between px-6 py-4">
 					<div class="text-lg font-semibold text-gray-900">
@@ -31,7 +31,7 @@
 				</div>
 			</div>
 
-			<div v-else class="flex h-screen w-screen flex-col justify-center bg-white">
+			<div v-else class="flex h-screen w-full flex-col justify-center bg-white">
 				<div class="flex flex-col mx-auto gap-3 items-center">
 					<FrappeHRLogo class="h-8 w-8" />
 					<div class="text-3xl font-semibold text-gray-900 text-center">
@@ -39,7 +39,7 @@
 					</div>
 				</div>
 
-				<div class="mx-auto mt-10 w-full px-8 sm:w-96">
+				<div class="mx-auto mt-10 w-full px-8">
 					<form v-if="!user_pass_login_disabled.data" class="flex flex-col space-y-4" @submit.prevent="submit">
 						<Input
 							:label="__('Email')"

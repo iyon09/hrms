@@ -1,28 +1,33 @@
 <template>
-	<div class="flex flex-col gap-5 my-4 w-full">
-		<div class="text-lg font-medium text-gray-900">{{ title || __("Quick Links") }}</div>
-		<div class="flex flex-col bg-white rounded">
-			<router-link
-				class="flex flex-row flex-start p-4 items-center justify-between"
-				:class="link !== props.items[props.items.length - 1] && 'border-b'"
-				v-for="link in props.items"
-				:key="link.title"
-				:to="{ name: link.route }"
-			>
-				<div class="flex flex-row items-center gap-3 grow">
-					<component :is="link.icon" class="h-5 w-5 text-gray-500" />
-					<div class="text-base font-normal text-gray-800">
-						{{ link.title }}
+	<div class="flex flex-col w-full">
+		<div class="px-1 pt-7 pb-2.5 font-heading text-xl font-bold text-ink">
+			{{ title || __("Quick Links") }}
+		</div>
+		<div class="flex flex-col bg-white rounded-card overflow-hidden">
+			<template v-for="(link, index) in props.items" :key="link.title">
+				<router-link
+					class="flex flex-row items-center gap-3.5 px-4 py-[11px] active:bg-gray-100 transition-colors"
+					:to="{ name: link.route }"
+				>
+					<IconTile :icon="link.icon" :color="link.color" />
+					<div class="flex flex-col grow min-w-0">
+						<div class="text-[17px] text-ink truncate">{{ link.title }}</div>
+						<div v-if="link.subtitle" class="text-[13px] text-ink-subtle truncate">
+							{{ link.subtitle }}
+						</div>
 					</div>
-				</div>
-				<FeatherIcon name="chevron-right" class="h-5 w-5 text-gray-500" />
-			</router-link>
+					<FeatherIcon name="chevron-right" class="h-[17px] w-[17px] text-ink-faint shrink-0" />
+				</router-link>
+				<div v-if="index < props.items.length - 1" class="ml-[60px] h-px bg-gray-200/60"></div>
+			</template>
 		</div>
 	</div>
 </template>
 
 <script setup>
 import { FeatherIcon } from "frappe-ui"
+
+import IconTile from "@/components/IconTile.vue"
 
 const props = defineProps({
 	title: {

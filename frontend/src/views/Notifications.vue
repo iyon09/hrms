@@ -1,22 +1,9 @@
 <template>
 	<ion-page>
-		<ion-content class="ion-padding">
-			<div class="flex flex-col h-screen w-screen">
-				<div class="w-full sm:w-96">
-					<header
-						class="flex flex-row bg-white shadow-sm py-4 px-3 items-center justify-between border-b sticky top-0 z-10"
-					>
-						<div class="flex flex-row items-center">
-							<Button
-								variant="ghost"
-								class="!pl-0 hover:bg-white"
-								@click="router.back()"
-							>
-								<FeatherIcon name="chevron-left" class="h-5 w-5" />
-							</Button>
-							<h2 class="text-xl font-semibold text-gray-900">{{ __("Notifications") }} </h2>
-						</div>
-					</header>
+		<ion-content class="ion-no-padding">
+			<div class="flex flex-col min-h-full w-full bg-page">
+				<div class="w-full">
+					<PageHeader :title="__('Notifications')" />
 
 					<div class="flex flex-col gap-4 mt-5 p-4">
 						<div class="flex flex-row justify-between items-center">
@@ -52,7 +39,7 @@
 						</div>
 
 						<div
-							class="flex flex-col bg-white rounded"
+							class="flex flex-col bg-white rounded-card overflow-hidden"
 							v-if="notifications.data?.length"
 						>
 							<router-link
@@ -97,6 +84,7 @@
 </template>
 
 <script setup>
+import PageHeader from "@/components/PageHeader.vue"
 import { IonContent, IonPage } from "@ionic/vue"
 import { useRouter } from "vue-router"
 import { createResource, FeatherIcon } from "frappe-ui"
