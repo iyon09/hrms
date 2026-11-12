@@ -132,3 +132,28 @@ ion-tab-bar.app-tab-bar ion-tab-button.tab-selected {
 .no-scrollbar::-webkit-scrollbar {
 	display: none;
 }
+
+/* frappe-ui solid buttons default to a black (gray) theme; make every primary
+   action the brand green, and full-width ones the Flutter-style pill */
+button.bg-surface-gray-7,
+button.bg-surface-green-3 {
+	background-color: #0e7c5a;
+	color: #fff;
+}
+button.bg-surface-gray-7:hover,
+button.bg-surface-green-3:hover {
+	background-color: #11855f;
+}
+button.bg-surface-gray-7:active,
+button.bg-surface-green-3:active {
+	background-color: #0b6a4d;
+}
+button.w-full:is(.bg-surface-gray-7, .bg-surface-green-3, .bg-surface-red-5) {
+	border-radius: 9999px;
+	font-weight: 600;
+}
+/* some screens force a black disabled state */
+button.disabled\:bg-gray-700:disabled {
+	background-color: #7bc9a4;
+	color: #fff;
+}

@@ -60,7 +60,23 @@
 		:breakpoints="[0, 1]"
 	>
 		<div class="w-full max-h-[85vh] overflow-y-auto flex flex-col items-center gap-5 p-4 pb-8 bg-page">
-			<div class="flex flex-col gap-1.5 mt-2 items-center justify-center">
+			<!-- a check-in left open past 3am: fill in when they left before checking in again -->
+			<div v-if="missedCheckout" class="w-full flex flex-row gap-3 mt-2 rounded-card bg-[#FEF3C7] p-4">
+				<FeatherIcon name="alert-triangle" class="h-5 w-5 shrink-0 text-[#B45309]" />
+				<div class="flex flex-col gap-1">
+					<span class="text-[15px] font-semibold text-ink">{{ __("You forgot to check out") }}</span>
+					<span class="text-[13px] text-ink-muted">
+						{{
+							__("{0}, checked in at {1}. Fill in when you left; it goes to HR as an attendance request.", [
+								dayjs(missedCheckout.date).format("dddd, D MMM"),
+								dayjs(missedCheckout.check_in_time).format("h:mm a"),
+							])
+						}}
+					</span>
+				</div>
+			</div>
+
+			<div v-else class="flex flex-col gap-1.5 mt-2 items-center justify-center">
 				<div class="font-bold text-xl">
 					{{ dayjs(checkinTimestamp).format("hh:mm:ss a") }}
 				</div>
@@ -69,7 +85,7 @@
 				</div>
 			</div>
 
-			<template v-if="settings.data?.allow_geolocation_tracking">
+			<template v-if="settings.data?.allow_geolocation_tracking && !missedCheckout">
 				<span v-if="locationStatus" class="font-medium text-ink-subtle text-sm text-center">
 					{{ locationStatus }}
 				</span>
@@ -100,7 +116,20 @@
 					</span>
 				</div>
 
-				<template v-if="nextAction.action === 'IN'">
+				<template v-if="missedCheckout">
+					<span class="block px-1 text-[13px] font-medium text-ink-subtle after:content-['_*'] after:text-red-600">
+						{{ __("Check-out time") }}
+					</span>
+					<!-- a list rather than <input type="time">, which Safari doesn't report until blurred -->
+					<select v-model="missedOutTime" class="form-select w-full">
+						<option value="" disabled>{{ __("Select time") }}</option>
+						<option v-for="option in missedTimeOptions" :key="option.value" :value="option.value">
+							{{ option.label }}
+						</option>
+					</select>
+				</template>
+
+				<template v-if="nextAction.action === 'IN' && !missedCheckout">
 					<span class="block px-1 text-[13px] font-medium text-ink-subtle after:content-['_*'] after:text-red-600">
 						{{ __("Charge Code") }}
 					</span>
@@ -114,7 +143,11 @@
 
 				<template v-else>
 					<span class="block px-1 text-[13px] font-medium text-ink-subtle">
-						{{ __("Charge codes worked on today") }}
+						{{
+							missedCheckout
+								? __("Charge codes worked on {0}", [dayjs(missedCheckout.date).format("D MMM")])
+								: __("Charge codes worked on today")
+						}}
 					</span>
 					<div
 						v-for="(code, index) in selectedChargeCodes"
@@ -150,10 +183,12 @@
 					</span>
 					<span v-else-if="workedHours" class="px-1 text-[13px] text-ink-subtle">
 						{{
-							__("{0} hrs today, split equally between {1} charge code(s)", [
-								workedHours.toFixed(1),
-								selectedChargeCodes.length,
-							])
+							__(
+								missedCheckout
+									? "{0} hrs that day, split equally between {1} charge code(s)"
+									: "{0} hrs today, split equally between {1} charge code(s)",
+								[workedHours.toFixed(1), selectedChargeCodes.length]
+							)
 						}}
 					</span>
 				</template>
@@ -165,9 +200,33 @@
 					:placeholder="__('Select Activity Type')"
 					@update:modelValue="(option) => (selectedActivityType = option?.value || null)"
 				/>
+
+				<template v-if="missedCheckout">
+					<span class="block px-1 text-[13px] font-medium text-ink-subtle after:content-['_*'] after:text-red-600">
+						{{ __("Reason") }}
+					</span>
+					<textarea
+						v-model="missedReason"
+						rows="3"
+						class="form-textarea w-full"
+						:placeholder="__('e.g. Phone battery died before I could check out')"
+					></textarea>
+				</template>
 			</div>
 
 			<Button
+				v-if="missedCheckout"
+				:loading="missedCheckoutSubmit.loading"
+				:disabled="!selectedChargeCodes.length || !missedOutAt || !missedReason.trim()"
+				variant="solid"
+				class="w-full py-6 !rounded-full !bg-brand hover:!bg-brand-strong text-[17px] font-semibold"
+				@click="submitMissedCheckout"
+			>
+				{{ __("Submit & Continue") }}
+			</Button>
+
+			<Button
+				v-else
 				:loading="checkins.insert.loading || timesheetCheckin.loading"
 				:disabled="timesheetEnabled && !selectedChargeCodes.length"
 				variant="solid"
@@ -218,7 +277,14 @@ const lastLogType = computed(() => {
 	return lastLog?.value?.log_type === "IN" ? "check-in" : "check-out"
 })
 
-const isCheckedIn = computed(() => lastLog?.value?.log_type === "IN")
+// a working day runs until 3am; a check-in still open after that was never checked out
+const CUTOFF_HOURS = 3
+const workDate = (time) => dayjs(time).subtract(CUTOFF_HOURS, "hour").format("YYYY-MM-DD")
+const isStaleCheckin = computed(
+	() => lastLog.value?.log_type === "IN" && workDate(lastLog.value.time) < workDate(dayjs())
+)
+
+const isCheckedIn = computed(() => lastLog?.value?.log_type === "IN" && !isStaleCheckin.value)
 
 const employeeDetail = computed(() =>
 	[employee?.data?.designation, employee?.data?.department].filter(Boolean).join(" · ")
@@ -236,6 +302,11 @@ const todayStatus = computed(() => {
 
 	const time = dayjs(log.time)
 	const isToday = time.isSame(dayjs(), "day")
+	if (isStaleCheckin.value)
+		return {
+			title: __("Not checked in yet"),
+			detail: __("You didn't check out on {0}", [dayjs(workDate(log.time)).format("D MMM")]),
+		}
 	if (log.log_type === "IN" && isToday)
 		return {
 			title: __("Checked in at {0}", [time.format("h:mm a")]),
@@ -251,7 +322,7 @@ const todayStatus = computed(() => {
 })
 
 const nextAction = computed(() => {
-	return lastLog?.value?.log_type === "IN"
+	return isCheckedIn.value
 		? { action: "OUT", label: __("Check Out") }
 		: { action: "IN", label: __("Check In") }
 })
@@ -295,10 +366,29 @@ const timesheetContext = createResource({
 		const codes = data.today_charge_codes?.length
 			? [...data.today_charge_codes]
 			: [data.charge_code].filter(Boolean)
-		selectedChargeCodes.value = nextAction.value.action === "IN" ? codes.slice(0, 1) : codes
+		selectedChargeCodes.value = nextAction.value.action === "IN" && !data.missed_checkout ? codes.slice(0, 1) : codes
 		selectedActivityType.value = data.activity_type || null
 	},
 })
+const missedCheckout = computed(() => timesheetContext.data?.missed_checkout || null)
+const missedOutTime = ref("")
+const missedReason = ref("")
+// every 5 minutes from the last check-in until 3am the next morning
+const missedTimeOptions = computed(() => {
+	if (!missedCheckout.value) return []
+	const day = dayjs(missedCheckout.value.date)
+	const end = day.add(1, "day").hour(CUTOFF_HOURS).minute(0)
+	const checkedIn = dayjs(missedCheckout.value.last_check_in_time)
+	let time = checkedIn.startOf("minute").add(5 - (checkedIn.minute() % 5), "minute")
+	const options = []
+	for (; time.isBefore(end); time = time.add(5, "minute"))
+		options.push({
+			value: time.format("YYYY-MM-DD HH:mm:ss"),
+			label: time.isSame(day, "day") ? time.format("h:mm a") : __("{0} (next day)", [time.format("h:mm a")]),
+		})
+	return options
+})
+const missedOutAt = computed(() => (missedCheckout.value && missedOutTime.value ? dayjs(missedOutTime.value) : null))
 const timesheetEnabled = computed(() => Boolean(timesheetContext.data))
 const selectedChargeCodes = ref([])
 const selectedActivityType = ref(null)
@@ -331,10 +421,14 @@ function chargeCodeLabel(code) {
 	return doc?.description || doc?.work_group || ""
 }
 
-// first check-in of today until now
+// first check-in of the working day until now (or until the filled-in missed check-out)
 const workedHours = computed(() => {
+	if (missedCheckout.value)
+		return missedOutAt.value
+			? missedOutAt.value.diff(dayjs(missedCheckout.value.check_in_time), "minute") / 60
+			: 0
 	const firstIn = (checkins.data || [])
-		.filter((log) => log.log_type === "IN" && dayjs(log.time).isToday())
+		.filter((log) => log.log_type === "IN" && workDate(log.time) === workDate(dayjs()))
 		.at(-1)
 	return firstIn ? dayjs(checkinTimestamp.value).diff(dayjs(firstIn.time), "minute") / 60 : 0
 })
@@ -352,6 +446,40 @@ const timesheetCheckin = createResource({
 	url: "hse_management.timesheet_checkin.log_checkin",
 	method: "POST",
 })
+
+const missedCheckoutSubmit = createResource({
+	url: "hse_management.timesheet_checkin.submit_missed_checkout",
+	method: "POST",
+})
+
+const submitMissedCheckout = () => {
+	missedCheckoutSubmit.submit(
+		{
+			checkout_time: missedOutAt.value.format("YYYY-MM-DD HH:mm:ss"),
+			reason: missedReason.value.trim(),
+			charge_codes: selectedChargeCodes.value,
+			activity_type: selectedActivityType.value,
+		},
+		{
+			onSuccess(data) {
+				missedOutTime.value = ""
+				missedReason.value = ""
+				if (data.attendance_request)
+					showToast(__("Sent to HR"), __("Attendance request {0} was created", [data.attendance_request]))
+				else if (data.attendance_note) showToast(__("Saved"), data.attendance_note)
+				if (data.timesheet_error) showToast(__("Timesheet not updated"), data.timesheet_error, false)
+				// the popup carries on with today's check-in
+				checkinTimestamp.value = dayjs().format("YYYY-MM-DD HH:mm:ss")
+				timesheetContext.reload()
+				if (settings.data?.allow_geolocation_tracking) fetchLocation()
+			},
+			onError(error) {
+				for (const message of error.messages || [__("Could not save the missed check-out")])
+					showToast(__("Error"), message, false)
+			},
+		}
+	)
+}
 
 const showToast = (title, text, success = true) =>
 	toast({

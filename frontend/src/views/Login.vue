@@ -22,7 +22,7 @@
 						{{ __("Your password has expired. Please reset your password to continue") }}
 					</p>
 					<a
-						class="mt-6 inline-flex items-center justify-center gap-2 transition-colors focus:outline-none text-white bg-gray-900 hover:bg-gray-800 active:bg-gray-700 focus-visible:ring focus-visible:ring-gray-400 h-9 text-base px-4 rounded"
+						class="mt-6 inline-flex items-center justify-center gap-2 transition-colors focus:outline-none text-white bg-brand hover:bg-brand-strong active:bg-brand-strong focus-visible:ring focus-visible:ring-brand-soft h-11 text-base font-semibold px-6 rounded-full"
 						:href="resetPassword.link"
 						target="_blank"
 					>
