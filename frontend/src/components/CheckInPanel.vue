@@ -133,11 +133,11 @@
 					<span class="block px-1 text-[13px] font-medium text-ink-subtle after:content-['_*'] after:text-red-600">
 						{{ __("Charge Code") }}
 					</span>
-					<Autocomplete
+					<SearchSelect
 						:options="chargeCodeOptions"
-						:modelValue="selectedChargeCodes[0]"
+						:modelValue="selectedChargeCodes[0] || null"
 						:placeholder="__('Select Charge Code')"
-						@update:modelValue="(option) => (selectedChargeCodes = option?.value ? [option.value] : [])"
+						@update:modelValue="(value) => (selectedChargeCodes = value ? [value] : [])"
 					/>
 				</template>
 
@@ -170,13 +170,13 @@
 							<FeatherIcon name="x" class="h-4 w-4" />
 						</button>
 					</div>
-					<Autocomplete
+					<SearchSelect
 						:options="chargeCodeOptions.filter((option) => !selectedChargeCodes.includes(option.value))"
 						:modelValue="null"
 						:placeholder="
 							selectedChargeCodes.length ? __('+ Add another charge code') : __('Select Charge Code')
 						"
-						@update:modelValue="(option) => option?.value && selectedChargeCodes.push(option.value)"
+						@update:modelValue="(value) => value && selectedChargeCodes.push(value)"
 					/>
 					<span v-if="!selectedChargeCodes.length" class="px-1 text-[13px] text-[#B45309]">
 						{{ __("Pick at least one charge code to check out") }}
@@ -194,11 +194,11 @@
 				</template>
 
 				<span class="block px-1 text-[13px] font-medium text-ink-subtle">{{ __("Activity Type") }}</span>
-				<Autocomplete
+				<SearchSelect
 					:options="activityTypeOptions"
 					:modelValue="selectedActivityType"
 					:placeholder="__('Select Activity Type')"
-					@update:modelValue="(option) => (selectedActivityType = option?.value || null)"
+					@update:modelValue="(value) => (selectedActivityType = value || null)"
 				/>
 
 				<template v-if="missedCheckout">
@@ -240,7 +240,8 @@
 </template>
 
 <script setup>
-import { Autocomplete, createListResource, createResource, toast, FeatherIcon } from "frappe-ui"
+import { createListResource, createResource, toast, FeatherIcon } from "frappe-ui"
+import SearchSelect from "@/components/SearchSelect.vue"
 import { computed, inject, ref, onMounted, onBeforeUnmount } from "vue"
 import { IonModal, modalController } from "@ionic/vue"
 
